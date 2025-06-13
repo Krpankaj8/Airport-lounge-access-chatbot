@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Airport Lounge Finder</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #1a1a2e; /* Dark Purple/Black */
+            color: #e0e0e0; /* Light Gray text */
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 20px auto;
+            background-color: #2a2a3e; /* Slightly Lighter Purple/Black */
+            padding: 20px 30px 30px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            color: #b39ddb; /* Lighter Purple */
+            text-align: center;
+            margin-bottom: 25px;
+           /* border-bottom: 2px solid #7e57c2; /* Medium Purple */
+            padding-bottom: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+         h1 .plane-icon {
+             display: inline-block;
+             transform: rotate(-15deg); /* Slightly tilt the plane */
+             margin: 0 10px;
+             font-size: 0.9em; /* Adjust size relative to h1 */
+         }
+        .search-form {
+            background-color: #3a3a5e;
+            padding: 20px 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end; /* Align items to the bottom */
+            border: 1px solid #4a4a6a;
+        }
+        .search-form .input-group {
+            display: flex;
+            flex-direction: column; /* Labels on top */
+            flex-grow: 1;
+            min-width: 150px;
+        }
+        .search-form label {
+            margin-bottom: 5px; /* Space between label and input */
+            color: #c5cae9; /* Light indigo/purple */
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .search-form input[type="text"],
+        .search-form input[type="date"],
+        .search-form input[type="time"] {
+            padding: 10px 12px;
+            border: 1px solid #5c6bc0; /* Indigo border */
+            background-color: #2a2a3e;
+            color: #e0e0e0;
+            border-radius: 5px;
+            font-size: 0.95em;
+            width: 100%; /* Make input take full width of its group */
+            box-sizing: border-box; /* Include padding in width */
+        }
+         .search-form input:focus {
+             outline: none;
+             border-color: #9fa8da; /* Lighter indigo on focus */
+             box-shadow: 0 0 0 2px rgba(159, 168, 218, 0.3);
+         }
+
+        .search-form button {
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #7e57c2, #5e35b1); /* Purple gradient */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            height: 40px; /* Match input height approx */
+            margin-left: 10px; /* Space before button */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .search-form button:hover {
+            background: linear-gradient(135deg, #673ab7, #512da8); /* Darker gradient */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+             transform: translateY(-1px);
+        }
+        .results-heading {
+            color: #b39ddb;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+            font-weight: 500;
+            text-align: center;
+            border-bottom: 1px solid #4a4a6a;
+            padding-bottom: 10px;
+        }
+         .demo-notice {
+            background-color: rgba(126, 87, 194, 0.2); /* Semi-transparent Medium Purple */
+            color: #ede7f6; /* Very light purple */
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 0.9em;
+            border: 1px solid #7e57c2;
+        }
+        .lounge-list {
+            list-style: none;
+            padding: 0;
+        }
+        .lounge-item {
+            background-color: #3a3a5e;
+            margin-bottom: 20px;
+            padding: 20px 25px;
+            border-radius: 8px;
+            border-left: 6px solid #7e57c2; /* Medium Purple accent */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            position: relative; /* For potential future absolute elements */
+            overflow: hidden; /* Ensure content stays within bounds */
+        }
+        .lounge-item:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+             border-left-color: #b39ddb; /* Lighter purple on hover */
+        }
+        .lounge-item h2 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: #d1c4e9; /* Lighter Purple */
+            font-size: 1.35em;
+            font-weight: 600;
+        }
+        .lounge-details {
+            font-size: 0.95em;
+            color: #bdbdbd; /* Lighter gray for details */
+            margin-bottom: 15px;
+        }
+        .lounge-details strong {
+            color: #e8eaf6; /* Almost white for labels */
+            font-weight: 500;
+            margin-right: 5px;
+        }
+        .lounge-details .rating {
+            color: #ffeb3b; /* Yellow for stars */
+        }
+        .ai-description {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: rgba(126, 87, 194, 0.15); /* Faint purple background */
+            border-radius: 6px;
+           /* border-left: 4px solid #9575cd; /* Light Purple border */
+            color: #ede7f6; /* Soft light purple text */
+            font-size: 1.0em; /* Slightly larger for emphasis */
+            border: 1px solid rgba(126, 87, 194, 0.4);
+        }
+         .ai-description strong, .ai-description b {
+             color: #fff; /* Make bold text white */
+             font-weight: 600;
+         }
+          .ai-description i, .ai-description em {
+             color: #d1c4e9; /* Use a lighter purple for italics */
+         }
+        .no-results {
+            text-align: center;
+            color: #bdbdbd;
+            padding: 30px;
+            font-size: 1.1em;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #4a4a6a;
+            font-size: 0.85em;
+            color: #9e9e9e; /* Gray */
+        }
+        footer a {
+            color: #b39ddb; /* Lighter Purple */
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+         footer a:hover {
+             color: #d1c4e9;
+         }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span class="plane-icon">✈️</span> AI Airport Lounge Finder <span class="plane-icon">✈️</span></h1>
+
+        <form class="search-form" method="GET" action="/">
+            <div class="input-group">
+                <label for="place">Airport Code:</label>
+                <input type="text" id="place" name="place" placeholder="e.g., JFK, LHR" value="{{ search_terms.get('place', '') }}">
+            </div>
+             <div class="input-group">
+                 <label for="date">Date:</label>
+                 <input type="date" id="date" name="date" value="{{ search_terms.get('date', '') }}">
+             </div>
+             <div class="input-group">
+                 <label for="time">Time:</label>
+                 <input type="time" id="time" name="time" value="{{ search_terms.get('time', '') }}">
+             </div>
+             <div class="input-group">
+                 <label for="flight">Flight (Optional):</label>
+                 <input type="text" id="flight" name="flight" placeholder="e.g., BA286" value="{{ search_terms.get('flight', '') }}">
+             </div>
+
+            <button type="submit">🔍 Find Lounges</button>
+        </form>
+
+        {% if not search_active %}
+            <div class="demo-notice">
+                <strong>Welcome!</strong> Showing all demo lounges below. Use the search bar above to find lounges for a specific airport!
+            </div>
+        {% endif %}
+
+        {% if lounges %}
+            <h2 class="results-heading">
+                {% if search_active %}
+                    Lounges Found {% if search_terms.place %} for {{ search_terms.place.upper() }} {% endif %}
+                {% else %}
+                    All Demo Lounges
+                {% endif %}
+            </h2>
+            <ul class="lounge-list">
+                {% for lounge in lounges %}
+                <li class="lounge-item">
+                    <h2>{{ lounge.name }}</h2>
+                    <div class="lounge-details">
+                        <strong>Airport:</strong> {{ lounge.airport }}<br>
+                        <strong>Terminal:</strong> {{ lounge.terminal }}<br>
+                        <strong>Rating:</strong> <span class="rating">{{ lounge.rating }} / 5.0 ⭐</span><br>
+                        <strong>Amenities:</strong> {{ lounge.amenities }}
+                    </div>
+                   
+                    {% if lounge.ai_description %}
+                    <h1>Ai Response: </h1>
+                    <div class="ai-description">
+                        {{ lounge.ai_description | safe }} {# Use 'safe' filter as AI might use markdown/basic html #}
+                    </div>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        {% elif search_active %}
+             <h2 class="results-heading">No Lounges Found</h2>
+             <p class="no-results">😢 We couldn't find any lounges matching your search for "{{ search_terms.place }}" in our demo data. Try another airport code!</p>
+        {% endif %}
+
+    </div>
+     <footer>
+        Powered by Toil Labs AI ✨ - <a href="#" target="_blank">Visit Toil Labs</a>
+        <br> Lounge data is for demonstration purposes only.
+    </footer>
+</body>
+</html>
